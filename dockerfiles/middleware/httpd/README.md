@@ -7,10 +7,10 @@ NOTE: this is for demo only, in production it would be better to directly use th
 to build on openshift
 oc login -u system:admin
 oc get svc -n default | grep registry
-oc new-build --context-dir=dockerfiles/middleware/httpd --name=centos-httpd --strategy=docker  https://github.com/SvenVD/openshiftdemo/ --build-arg FROMLOCATION="172.30.1.1/" --allow-missing-images=false
+oc new-build --context-dir=dockerfiles/middleware/httpd --name=centos-httpd --strategy=docker  https://github.com/SvenVD/openshiftdemo/ --allow-missing-images=true
 
 to build locally
-docker build --build-arg FROMLOCATION="" -t centos-httpd ./
+docker build -t centos-httpd ./
 to run locally
 docker run  -p 8080:8080 --name testhttpd centos-httpd
 

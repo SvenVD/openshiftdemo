@@ -3,7 +3,7 @@ Image should be build by openshift, inside openshift and pushed to internal open
 
 If this needs building outside of openshift better use something like ansible-containers or buildah?
 
-oc new-build --context-dir=dockerfiles/core --name=corebuild --strategy=docker  https://github.com/SvenVD/openshiftdemo/
+oc new-build --context-dir=dockerfiles/core --name=corebuild --strategy=docker  https://github.com/SvenVD/openshiftdemo/ -n development
 
 alternative way:
 oc create -f yaml/imagestream.yaml
