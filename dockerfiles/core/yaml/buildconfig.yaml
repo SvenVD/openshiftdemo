@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: BuildConfig
+metadata:
+  annotations:
+    openshift.io/generated-by: OpenShiftNewBuild
+  creationTimestamp: null
+  labels:
+    build: corebuild
+  name: corebuild
+spec:
+  failedBuildsHistoryLimit: 5
+  nodeSelector: null
+  output:
+    to:
+      kind: ImageStreamTag
+      name: corebuild:latest
+  postCommit: {}
+  resources: {}
+  runPolicy: Serial
+  source:
+    contextDir: dockerfiles/core
+    git:
+      uri: https://github.com/SvenVD/openshiftdemo/
+    type: Git
+  strategy:
+    type: Docker
+    successfulBuildsHistoryLimit: 5
+  triggers:
+  - github:
+      secret: 5X0w-Y4vf2Kur-Jqww_t
+    type: GitHub
+  - generic:
+      secret: JnsbFd9jaXcUo2JqzrD0
+    type: Generic
+  - type: ConfigChange
+  - imageChange: {}
+    type: ImageChange
+status:
+  lastVersion: 0
