@@ -1,5 +1,8 @@
 #Demo file should not use in production should import known trusted rpm keys
-FROM corebuild:latest
+#In production this should reference openshift internal registry to prevent accidently pulling from dockerhub
+
+ARG FROMLOCATION=""
+FROM ${FROMLOCATION}corebuild:latest
 EXPOSE 8080
 RUN yum -y install httpd
 #Openshift by default does not run the container as root so need a port above 1024
