@@ -1,4 +1,4 @@
-Image should be build by openshift, inside openshift and pushed to internal openshift registry  
+Image should be build by openshift, inside openshift and pushed to internal openshift registry   
 Starts from core from building all kinds of middleware images to be used to build the final application image  
 This can also be self build S2I images  
 NOTE: this is for demo only, in production it would be better to directly use the existing prebuild s2i middleware that centos/Red Hat maintains if building is happening in openshift already  
