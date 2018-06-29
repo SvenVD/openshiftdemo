@@ -1,0 +1,8 @@
+#Demo file should not use in production should import known trusted rpm keys
+#In production this should reference openshift internal registry to prevent accidently pulling from dockerhub
+
+FROM development/centos-httpd:latest
+EXPOSE 8080
+COPY code/index.html /var/www/html/
+RUN rm -fv /etc/httpd/conf.d/welcome.conf
+CMD ["/usr/sbin/httpd","-D","FOREGROUND"]

@@ -10,4 +10,4 @@ oc create -f yaml/imagestream.yaml
 oc create -f yaml/buildconfig.yaml OR oc create -f yaml/buildconfig_withInlineDockerFile.yaml
 
 to build locally
-docker build -t corebuild:latest ./
+docker build -t development/corebuild:latest ./
