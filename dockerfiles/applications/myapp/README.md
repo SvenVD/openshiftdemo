@@ -5,6 +5,10 @@ NOTE: this is for demo only, in production it would be better to directly use th
 
 to build on openshift
 oc new-build --context-dir=dockerfiles/applications/myapp --name=myapp --strategy=docker  https://github.com/SvenVD/openshiftdemo/ --allow-missing-images=true -n development
+with deployment config and service
+oc new-app --name=myapp  --context-dir=dockerfiles/applications/myapp --strategy=docker https://github.com/SvenVD/openshiftdemo/ --allow-missing-images=true -n development
+oc expose service myapp --name=myapp
+oc get route
 
 to build locally
 docker build -t development/myapp ./
