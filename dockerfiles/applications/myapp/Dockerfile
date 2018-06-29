@@ -5,5 +5,5 @@ FROM development/centos-httpd:latest
 EXPOSE 8080
 COPY code/index.html /var/www/html/
 RUN rm -fv /etc/httpd/conf.d/welcome.conf
-CMD sed -i "s/application/application instanceid: $RANDOM/g" /var/www/html/index.html ; exec /usr/sbin/httpd -D FOREGROUND
+CMD sed -i "s/application/application instanceid: $RANDOM  environment: ${OPENSHIFT_BUILD_NAMESPACE}/g" /var/www/html/index.html ; exec /usr/sbin/httpd -D FOREGROUND
 
