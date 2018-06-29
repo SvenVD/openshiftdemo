@@ -11,9 +11,9 @@ oc expose service myapp --name=myapp
 oc get route
 
 to build locally
-docker build -t development/myapp ./
+docker build -t 172.30.1.1:5000/development/myapp ./
 to run locally
-docker run  -p 8080:8080 --name myapp development/myapp
+docker run  -p 8080:8080 --name myapp 172.30.1.1:5000/development/myapp
 
 
 If this needs building outside of openshift better use something like ansible-containers or buildah?
