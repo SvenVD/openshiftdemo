@@ -30,7 +30,7 @@ oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n developmen
 oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n testing
 oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n production
 
-#Allow  Testing and Production environment to pull images from the Development environment (where the images are build
+#Allow  Testing and Production environment to pull images from the Development environment (where the images are build)
 oc policy add-role-to-group system:image-puller system:serviceaccounts:testing -n development
 oc policy add-role-to-group system:image-puller system:serviceaccounts:production  -n development
 
