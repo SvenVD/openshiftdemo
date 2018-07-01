@@ -1,9 +1,9 @@
-preparation commands (note all this stuff can be in one yaml also)
+#preparation commands (note all this stuff can be in one yaml also)
 
 #Start minishift
 minishift addons install --defaults; minishift addons enable admin-user;minishift addons enable anyuid;  minishift start --vm-driver=virtualbox --memory 8G --cpus 4 --host-data-dir /var/hostdata_persistent --iso-url centos
 
-minishift console
+#minishift console
 
 eval $(minishift oc-env)
 
@@ -14,7 +14,7 @@ oc create -n cicd -f https://raw.githubusercontent.com/SvenVD/openshiftdemo/mast
 #Increase memory default spawned jenkins
 oc apply -f https://raw.githubusercontent.com/SvenVD/openshiftdemo/master/pipelines/deploymentconfigjenkins.yaml -n cicd
 
-
+#==============
 #Setup all environments/projects
 
 
@@ -31,8 +31,10 @@ oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n production
 oc policy add-role-to-group system:image-puller system:serviceaccounts:testing -n development
 oc policy add-role-to-group system:image-puller system:serviceaccounts:production  -n development
 
-minishift console
-CREATE BUILD AND DEPLOYMENT OBJECTS
+#minishift console
+
+#================
+#CREATE BUILD AND DEPLOYMENT OBJECTS
 
 #Next steps can be combined in ONE yaml file, but for demo do this on cli for now
 
@@ -43,6 +45,8 @@ oc set triggers bc centos-httpd --from-image='corebuild:latest' -n development
 
 #Create build and deployment config for the app in development
 oc new-app --name=myapp  --context-dir=dockerfiles/applications/myapp --strategy=docker https://github.com/SvenVD/openshiftdemo/ --allow-missing-images=true -e ENVPROJECT=development -n development
+#oc set probe dc/myapp -n development --readiness --get-url=http://:8080/  --initial-delay-seconds=5 --timeout-seconds=5 --failure-threshold=20
+oc set probe dc/myapp -n testing --readiness  --initial-delay-seconds=5 --timeout-seconds=5 --failure-threshold=20 -- curl -s http://localhost:8080 | grep -o application
 oc expose service myapp --name=myapp -n development
 oc get route  -n development
 
@@ -53,8 +57,8 @@ oc start-build centos-httpd -n development
 oc start-build myapp -n development
 
 
-
-CREATE PIPELINE
+#==============
+#CREATE PIPELINE
 
 #myapp buildconfig should only be started when applicationpipeline tells it to be started, it should not start by any other trigger, so removing default trigger
 oc set triggers bc myapp --from-github --remove -n development
@@ -69,14 +73,16 @@ oc set triggers bc myapp --from-image='centos-httpd:latest' --remove -n developm
 #Create the application pipeline this already contains a trigger to start on middleware image change, it also should start on code change, this can be done via a webhook on gitlab but is not configured now
 #oc create -n cicd -f https://raw.githubusercontent.com/SvenVD/openshiftdemo/master/pipelines/applicationpipeline.yaml
 
-
-Create deployment configs in other environments (this can be a single yaml file also)
+#=======
+#Create deployment configs in other environments (this can be a single yaml file also)
 
 #Create Testing deployment
 oc create dc myapp --image=172.30.1.1:5000/development/myapp:promoteQA -n testing
 oc rollout cancel dc myapp -n testing
 #Always pull if image is updated not only if not present
 oc patch dc/myapp  -p '{"spec":{"template":{"spec":{"containers":[{"name":"default-container","imagePullPolicy":"Always"}]}}}}' -n testing
+#oc set probe dc/myapp -n testing --readiness --get-url=http://:8080/  --initial-delay-seconds=5 --timeout-seconds=5 --failure-threshold=20
+oc set probe dc/myapp -n testing --readiness  --initial-delay-seconds=5 --timeout-seconds=5 --failure-threshold=20 -- curl -s http://localhost:8080 | grep -o application
 oc rollout cancel dc myapp-n testing
 oc set env dc/myapp --overwrite ENVPROJECT=testing -n testing
 oc rollout cancel dc myapp -n testing
@@ -89,15 +95,18 @@ oc create dc myapp --image=172.30.1.1:5000/development/myapp:promotePRD -n produ
 oc rollout cancel dc myapp -n production
 #Always pull if image is updated not only if not present
 oc patch dc/myapp  -p '{"spec":{"template":{"spec":{"containers":[{"name":"default-container","imagePullPolicy":"Always"}]}}}}' -n production
+#oc set probe dc/myapp -n production --readiness --get-url=http://:8080/  --initial-delay-seconds=5 --timeout-seconds=5 --failure-threshold=20
+oc set probe dc/myapp -n production --readiness  --initial-delay-seconds=5 --timeout-seconds=5 --failure-threshold=20 -- curl -s http://localhost:8080 | grep -o application
 oc rollout cancel dc myapp -n production
 oc set env dc/myapp --overwrite ENVPROJECT=production -n production
 oc rollout cancel dc myapp -n production
 oc expose dc myapp --port=8080 -n production
 oc expose service myapp --name=myapp -n production
+oc describe  dc/myapp -n development
 
 
-
-showcase rolling deployment
+#=======
+#showcase rolling deployment
 
 eval $(minishift oc-env);export URL=$(oc get route -o yaml -n production |grep "host: myapp" | head -n 1 | cut -d: -f2);
 while true;do date +%s; echo -n "exit code:" ;curl -s  $URL | grep instance; echo;sleep 1 ;done
