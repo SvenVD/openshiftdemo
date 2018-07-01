@@ -11,8 +11,11 @@ eval $(minishift oc-env)
 oc login -u developer -p developer
 oc new-project cicd --display-name='CICD Jenkins' --description='CICD Jenkins'
 oc create -n cicd -f https://raw.githubusercontent.com/SvenVD/openshiftdemo/master/pipelines/applicationpipeline.yaml
-#Increase memory default spawned jenkins
-oc apply -f https://raw.githubusercontent.com/SvenVD/openshiftdemo/master/pipelines/deploymentconfigjenkins.yaml -n cicd
+#Increase memory default spawned jenkins, below different ways to do this
+#oc patch dc jenkins -n cicd -p '{ "spec": {  "template": {  "spec": { "containers": [ { "image": "docker.io/openshift/jenkins-2-centos7@sha256:59b9b12acf8e048186fac8c9fce2759a4d7883fb1b1be33a778d236b573f720d", "name": "jenkins", "resources": { "limits": { "memory": "1000Mi"}}}]}}}}'
+#oc patch dc jenkins -n cicd -p '{ "spec": {  "template": {  "spec": { "containers": [ { "image": "docker.io/openshift/jenkins-2-centos7", "name": "jenkins", "resources": { "limits": { "memory": "2000Mi"}}}]}}}}'
+oc set resources dc jenkins -c=jenkins --limits=memory=2000Mi -n cicd
+#oc apply -f https://raw.githubusercontent.com/SvenVD/openshiftdemo/master/pipelines/deploymentconfigjenkins.yaml -n cicd
 
 #==============
 #Setup all environments/projects
@@ -47,6 +50,8 @@ oc set triggers bc centos-httpd --from-image='corebuild:latest' -n development
 oc new-app --name=myapp  --context-dir=dockerfiles/applications/myapp --strategy=docker https://github.com/SvenVD/openshiftdemo/ --allow-missing-images=true -e ENVPROJECT=development -n development
 #oc set probe dc/myapp -n development --readiness --get-url=http://:8080/  --initial-delay-seconds=5 --timeout-seconds=5 --failure-threshold=20
 oc set probe dc/myapp -n development --readiness  --initial-delay-seconds=5 --timeout-seconds=5 --failure-threshold=5 -- /usr/local/bin/checkreadiness.sh
+#Allow for gracefull scaledown of application/ draining of connections, at the time of writing oc set container-hook is not implemented yet, use patch command
+oc patch dc myapp -n production -p '{ "spec": {    "template": {  "spec": {  "containers": [{"lifecycle": {"preStop": {"exec": {"command": [  "sleep", "20"  ]}}}, "image": "172.30.1.1:5000/development/myapp:latest", "name": "default-container"  }]}}}}'
 oc expose service myapp --name=myapp -n development
 oc get route  -n development
 
@@ -78,6 +83,8 @@ oc set triggers bc myapp --from-image='centos-httpd:latest' --remove -n developm
 
 #Create Testing deployment
 oc create dc myapp --image=172.30.1.1:5000/development/myapp:promoteQA -n testing
+#Allow for gracefull scaledown of application/ draining of connections, at the time of writing oc set container-hook is not implemented yet, use patch command
+oc patch dc myapp -n testing -p '{ "spec": {    "template": {  "spec": {  "containers": [{"lifecycle": {"preStop": {"exec": {"command": [  "sleep", "20"  ]}}}, "image": "172.30.1.1:5000/development/myapp:promoteQA", "name": "default-container"  }]}}}}'
 oc rollout cancel dc myapp -n testing
 #Always pull if image is updated not only if not present
 oc patch dc/myapp  -p '{"spec":{"template":{"spec":{"containers":[{"name":"default-container","imagePullPolicy":"Always"}]}}}}' -n testing
@@ -92,6 +99,8 @@ oc expose service myapp --name=myapp -n testing
 
 #Create Production deployment
 oc create dc myapp --image=172.30.1.1:5000/development/myapp:promotePRD -n production
+#Allow for gracefull scaledown of application/ draining of connections, at the time of writing oc set container-hook is not implemented yet, use patch command
+oc patch dc myapp -n production -p '{ "spec": {    "template": {  "spec": {  "containers": [{"lifecycle": {"preStop": {"exec": {"command": [  "sleep", "20"  ]}}}, "image": "172.30.1.1:5000/development/myapp:promotePRD", "name": "default-container"  }]}}}}'
 oc rollout cancel dc myapp -n production
 #Always pull if image is updated not only if not present
 oc patch dc/myapp  -p '{"spec":{"template":{"spec":{"containers":[{"name":"default-container","imagePullPolicy":"Always"}]}}}}' -n production
@@ -109,7 +118,9 @@ oc describe  dc/myapp -n development
 #showcase rolling deployment
 
 eval $(minishift oc-env);export URL=$(oc get route -o yaml -n testing |grep "host: myapp" | head -n 1 | cut -d: -f2);
-while true;do date +%s; echo -n "exit code:" ;curl -s  $URL | grep instance; echo;sleep 1 ;done
+while true;do date +%s; echo -n "exit code:" ;curl -s  $URL | grep instance; echo;sleep 0.5 ;done
+#watch -n 0.5 "oc get pods" -n testing
 
 eval $(minishift oc-env);export URL=$(oc get route -o yaml -n production |grep "host: myapp" | head -n 1 | cut -d: -f2);
-while true;do date +%s; echo -n "exit code:" ;curl -s  $URL | grep instance; echo;sleep 1 ;done
+while true;do date +%s; echo -n "exit code:" ;curl -s  $URL | grep instance; echo;sleep 0.5 ;done
+#watch -n 0.5 "oc get pods" -n production
