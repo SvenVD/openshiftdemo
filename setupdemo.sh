@@ -108,5 +108,8 @@ oc describe  dc/myapp -n development
 #=======
 #showcase rolling deployment
 
+eval $(minishift oc-env);export URL=$(oc get route -o yaml -n testing |grep "host: myapp" | head -n 1 | cut -d: -f2);
+while true;do date +%s; echo -n "exit code:" ;curl -s  $URL | grep instance; echo;sleep 1 ;done
+
 eval $(minishift oc-env);export URL=$(oc get route -o yaml -n production |grep "host: myapp" | head -n 1 | cut -d: -f2);
 while true;do date +%s; echo -n "exit code:" ;curl -s  $URL | grep instance; echo;sleep 1 ;done
