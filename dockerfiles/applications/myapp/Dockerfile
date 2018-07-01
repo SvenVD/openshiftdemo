@@ -6,6 +6,7 @@ FROM 172.30.1.1:5000/development/centos-httpd:latest
 EXPOSE 8080
 ENV ENVPROJECT notset
 COPY code/index.html /var/www/html/
-RUN rm -fv /etc/httpd/conf.d/welcome.conf
+COPY code/checkreadiness.sh /usr/local/bin/checkreadiness.sh
+RUN chmod +x /usr/local/bin/checkreadiness.sh && rm -fv /etc/httpd/conf.d/welcome.conf
 CMD sed -i "s/application/application instanceid: $RANDOM  environment: ${ENVPROJECT}/g" /var/www/html/index.html ; exec /usr/sbin/httpd -D FOREGROUND
 

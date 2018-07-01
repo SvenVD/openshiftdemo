@@ -46,7 +46,7 @@ oc set triggers bc centos-httpd --from-image='corebuild:latest' -n development
 #Create build and deployment config for the app in development
 oc new-app --name=myapp  --context-dir=dockerfiles/applications/myapp --strategy=docker https://github.com/SvenVD/openshiftdemo/ --allow-missing-images=true -e ENVPROJECT=development -n development
 #oc set probe dc/myapp -n development --readiness --get-url=http://:8080/  --initial-delay-seconds=5 --timeout-seconds=5 --failure-threshold=20
-oc set probe dc/myapp -n testing --readiness  --initial-delay-seconds=5 --timeout-seconds=5 --failure-threshold=20 -- curl -s http://localhost:8080 | grep -o application
+oc set probe dc/myapp -n testing --readiness  --initial-delay-seconds=5 --timeout-seconds=5 --failure-threshold=20 -- /usr/local/bin/checkreadiness.sh
 oc expose service myapp --name=myapp -n development
 oc get route  -n development
 
@@ -82,7 +82,7 @@ oc rollout cancel dc myapp -n testing
 #Always pull if image is updated not only if not present
 oc patch dc/myapp  -p '{"spec":{"template":{"spec":{"containers":[{"name":"default-container","imagePullPolicy":"Always"}]}}}}' -n testing
 #oc set probe dc/myapp -n testing --readiness --get-url=http://:8080/  --initial-delay-seconds=5 --timeout-seconds=5 --failure-threshold=20
-oc set probe dc/myapp -n testing --readiness  --initial-delay-seconds=5 --timeout-seconds=5 --failure-threshold=20 -- curl -s http://localhost:8080 | grep -o application
+oc set probe dc/myapp -n testing --readiness  --initial-delay-seconds=5 --timeout-seconds=5 --failure-threshold=20 -- /usr/local/bin/checkreadiness.sh
 oc rollout cancel dc myapp-n testing
 oc set env dc/myapp --overwrite ENVPROJECT=testing -n testing
 oc rollout cancel dc myapp -n testing
@@ -96,7 +96,7 @@ oc rollout cancel dc myapp -n production
 #Always pull if image is updated not only if not present
 oc patch dc/myapp  -p '{"spec":{"template":{"spec":{"containers":[{"name":"default-container","imagePullPolicy":"Always"}]}}}}' -n production
 #oc set probe dc/myapp -n production --readiness --get-url=http://:8080/  --initial-delay-seconds=5 --timeout-seconds=5 --failure-threshold=20
-oc set probe dc/myapp -n production --readiness  --initial-delay-seconds=5 --timeout-seconds=5 --failure-threshold=20 -- curl -s http://localhost:8080 | grep -o application
+oc set probe dc/myapp -n production --readiness  --initial-delay-seconds=5 --timeout-seconds=5 --failure-threshold=20 -- /usr/local/bin/checkreadiness.sh
 oc rollout cancel dc myapp -n production
 oc set env dc/myapp --overwrite ENVPROJECT=production -n production
 oc rollout cancel dc myapp -n production
