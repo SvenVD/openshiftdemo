@@ -46,7 +46,7 @@ oc set triggers bc centos-httpd --from-image='corebuild:latest' -n development
 #Create build and deployment config for the app in development
 oc new-app --name=myapp  --context-dir=dockerfiles/applications/myapp --strategy=docker https://github.com/SvenVD/openshiftdemo/ --allow-missing-images=true -e ENVPROJECT=development -n development
 #oc set probe dc/myapp -n development --readiness --get-url=http://:8080/  --initial-delay-seconds=5 --timeout-seconds=5 --failure-threshold=20
-oc set probe dc/myapp -n testing --readiness  --initial-delay-seconds=5 --timeout-seconds=5 --failure-threshold=20 -- /usr/local/bin/checkreadiness.sh
+oc set probe dc/myapp -n development --readiness  --initial-delay-seconds=5 --timeout-seconds=5 --failure-threshold=20 -- /usr/local/bin/checkreadiness.sh
 oc expose service myapp --name=myapp -n development
 oc get route  -n development
 
