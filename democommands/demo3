@@ -1,0 +1,11 @@
+minishift console testing environment
+
+other terminal:
+oc idle myapp -n testing
+#oc get dc myapp -n testing
+
+minishift console
+
+start some traffic again
+eval $(minishift oc-env);export URL=$(oc get route -o yaml -n testing |grep "host: myapp" | head -n 1 | cut -d: -f2);
+while true;do date +%s; echo -n "exit code:" ;curl -s  $URL | grep instance; echo;sleep 0.5 ;done
