@@ -1,6 +1,9 @@
 #!/bin/bash
 #preparation commands (note all this stuff can be in one yaml also)
 
+#Delete previous running minishift
+minishift delete -f
+
 #Start minishift
 #minishift addons install --defaults; minishift addons enable admin-user;minishift addons enable anyuid;  minishift start --vm-driver=virtualbox --memory 8G --cpus 4 --host-data-dir /var/hostdata_persistent --iso-url centos
 #minishift 1.20 does not know --host-data-dir parameter anymore
