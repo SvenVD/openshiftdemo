@@ -2,7 +2,11 @@ Show steps in drawing
 show builds starting in development and show follow up autostart builds pipeline in cicd in GUI and CLI
 
 #oc logs bc/corebuild
-oc cancel-build -n cicd bc/applicationpipeline; echo "STARTING CORE BUILD";oc start-build corebuild -n development --follow; echo "AUTOSTART MIDDLEWARE BUILD";oc logs -f bc/centos-httpd  -n development;
+oc cancel-build -n cicd bc/applicationpipeline;
+echo "STARTING CORE BUILD";
+oc start-build corebuild -n development --follow;
+echo "AUTOSTART MIDDLEWARE BUILD";
+oc logs -f bc/centos-httpd  -n development;
 
 
 oc logs -f bc/applicationpipeline  -n cicd
